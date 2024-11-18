@@ -1,0 +1,179 @@
+//TO-DO list
+
+index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>My To-Do List</h1>
+      <p>Organize your tasks efficiently!</p>
+    </header>
+
+    <main>
+      <div class="todo-input">
+        <input type="text" id="new-task" placeholder="Add a new task..." />
+        <button id="add-task" class="btn">Add Task</button>
+      </div>
+
+      <ul id="task-list">
+        <!-- Tasks will appear here -->
+      </ul>
+    </main>
+  </div>
+
+  <script>
+    // JavaScript for To-Do functionality
+    const taskInput = document.getElementById('new-task');
+    const addTaskButton = document.getElementById('add-task');
+    const taskList = document.getElementById('task-list');
+
+    addTaskButton.addEventListener('click', () => {
+      const taskText = taskInput.value.trim();
+      if (taskText) {
+        const listItem = document.createElement('li');
+        listItem.className = 'task-item';
+        listItem.innerHTML = `
+          <span>${taskText}</span>
+          <button class="delete-task">×</button>
+        `;
+        taskList.appendChild(listItem);
+        taskInput.value = '';
+      }
+    });
+
+    taskList.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-task')) {
+        e.target.parentElement.remove();
+      }
+    });
+  </script>
+</body>
+</html>
+
+styles.css
+
+/* Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f9f9f9, #eaeaea);
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+  }
+  
+  /* Container */
+  .container {
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 400px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  
+  /* Header */
+  header h1 {
+    font-size: 1.8rem;
+    color: #36a819;
+    margin-bottom: 0.5rem;
+  }
+  
+  header p {
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Input Section */
+  .todo-input {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .todo-input input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .todo-input input:focus {
+    border-color: #36a819;
+    outline: none;
+  }
+  
+  .todo-input .btn {
+    background: #36a819;
+    color: white;
+    border: none;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .todo-input .btn:hover {
+    background: #36a819;
+  }
+  
+  /* Task List */
+  #task-list {
+    list-style: none;
+  }
+  
+  .task-item {
+    background: #f4f4f4;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease, background-color 0.3s ease;
+  }
+  
+  .task-item:hover {
+    transform: scale(1.02);
+    background: #e9f5ff;
+  }
+  
+  .task-item span {
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .task-item .delete-task {
+    background: none;
+    border: none;
+    color: #ff4d4d;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .task-item .delete-task:hover {
+    color: #d43636;
+  }
+  
