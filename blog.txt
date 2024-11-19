@@ -1,0 +1,178 @@
+//Blog application
+
+//Structure
+
+Blog application/
+├── backend/
+│   ├── controllers/
+│   │   ├── blogController.js
+│   ├── models/
+│   │   ├── BlogPost.js
+│   ├── routes/
+│   │   ├── blogRoutes.js
+|   └── index.js
+|   └── package.json
+├── frontend/
+│   ├── src
+│   │   ├── index.html
+│   │   ├── styles.css
+└── package.json
+
+//blogController.js
+
+const BlogPost = require('../models/BlogPost');
+
+exports.getAllPosts = async (req, res) => {
+  try {
+    const posts = await BlogPost.find();
+    res.status(200).json(posts);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching posts' });
+  }
+};
+
+exports.getPostById = async (req, res) => {
+  try {
+    const post = await BlogPost.findById(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.status(200).json(post);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching post' });
+  }
+};
+
+exports.createPost = async (req, res) => {
+  try {
+    const newPost = new BlogPost(req.body);
+    await newPost.save();
+    res.status(201).json(newPost);
+  } catch (err) {
+    res.status(400).json({ message: 'Error creating post' });
+  }
+};
+
+exports.updatePost = async (req, res) => {
+  try {
+    req.body.createdAt = Date.now();
+    const updatedPost = await BlogPost.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!updatedPost) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.status(200).json(updatedPost);
+  } catch (err) {
+    res.status(400).json({ message: 'Error updating post' });
+  }
+};
+
+exports.deletePost = async (req, res) => {
+  try {
+    const post = await BlogPost.findByIdAndDelete(req.params.id);
+    if (!post) {
+      return res.status(404).json({ message: 'Post not found' });
+    }
+    res.status(200).json({ message: 'Post deleted' });
+  } catch (err) {
+    res.status(500).json({ message: 'Error deleting post' });
+  }
+};
+
+//BlogPost.js
+
+const mongoose = require('mongoose');
+
+const blogPostSchema = new mongoose.Schema({
+  title: String,
+  content: String,
+  author: String,
+  createdAt: { type: Date, default: Date.now },
+});
+
+module.exports = mongoose.model('BlogPost', blogPostSchema);
+
+//blogRoutes.js
+
+const express = require('express');
+const blogController = require('../controllers/blogController');
+
+const router = express.Router();
+
+router.get('/getAllPosts', blogController.getAllPosts);
+
+router.get('/getPostById/:id', blogController.getPostById);
+
+router.post('/createPost', blogController.createPost);
+
+router.put('/updatePost/:id', blogController.updatePost);
+
+router.delete('/deletePost/:id', blogController.deletePost);
+
+module.exports = router;
+
+//index.js
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const blogRoutes = require('./routes/blogRoutes');
+
+const app = express();
+const port = 8086;
+
+app.use(express.json());
+app.use(cors());
+
+mongoose.connect('mongodb://127.0.0.1:27017/blog-application', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+app.use('/api', blogRoutes);
+
+app.listen(port, () => {
+  console.log(`Server is running on http://localhost:${port}`);
+});
+
+//index.html
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>blog application</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/png" href="blog_logo.png">
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
+
+//styles.css
+
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+h2 {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.card {
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.container {
+  max-width: 900px;
+}
+
+.btn {
+  min-width: 150px;
+}
+
+textarea {
+  resize: none;
+}
+

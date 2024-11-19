@@ -1,0 +1,300 @@
+//Food delivery 
+
+//Structure
+
+food-delivery-app/
+├── src/
+│   ├── components/
+│   │   ├── Header.jsx
+│   │   ├── MenuItem.jsx
+│   │   ├── MenuList.jsx
+│   │   └── Cart.jsx
+│   ├── App.js
+│   └── App.css
+|   └── App.jsx
+|   └── index.css
+|   └── index.js
+├── public/
+│   └── index.html
+└── package.json
+
+
+//index.html
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Delivery App</title>
+</head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
+
+//Cart.jsx
+
+import React from 'react';
+
+const Cart = ({ cartItems, removeFromCart }) => {
+  const total = cartItems.reduce((acc, item) => acc + item.price, 0);
+
+  return (
+    <div className="cart">
+      <h2>Cart</h2>
+      <ul>
+        {cartItems.map((item, index) => (
+          <li key={index}>
+            {item.name} - ${item.price}
+            <button onClick={() => removeFromCart(item)}>Remove</button>
+          </li>
+        ))}
+      </ul>
+      <h3>Total: ${total}</h3>
+    </div>
+  );
+};
+
+export default Cart;
+
+//Header.jsx
+
+import React from 'react';
+
+const Header = () => {
+  return (
+    <header>
+      <h1>Baiju - Food Delivery App</h1>
+    </header>
+  );
+};
+
+export default Header;
+
+//MenuItem.jsx
+
+import React from 'react';
+
+const MenuItem = ({ item, addToCart }) => {
+  return (
+    <div className="menu-item">
+      <h3>{item.name}</h3>
+      <p>{item.description}</p>
+      <p>${item.price}</p>
+      <button onClick={() => addToCart(item)}>Add to Cart</button>
+    </div>
+  );
+};
+
+export default MenuItem;
+
+//MenuList.jsx
+
+import React from 'react';
+import MenuItem from './MenuItem';
+
+const MenuList = ({ items, addToCart }) => {
+  return (
+    <div className="menu-list">
+      {items.map(item => (
+        <MenuItem key={item.id} item={item} addToCart={addToCart} />
+      ))}
+    </div>
+  );
+};
+
+export default MenuList;
+
+//App.css
+
+/* App-specific Styles */
+.App {
+  text-align: center;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  background-color: #ff6347;
+  color: white;
+  padding: 10px 0;
+}
+
+.menu-list {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.menu-item {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin: 10px;
+  width: 200px;
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.menu-item h3 {
+  margin: 10px 0;
+}
+
+.menu-item button {
+  background-color: #ff6347;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.menu-item button:hover {
+  background-color: #d84b3e;
+}
+
+.cart {
+  margin-top: 30px;
+}
+
+.cart ul {
+  list-style: none;
+  padding: 0;
+}
+
+.cart ul li {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.cart h3 {
+  font-weight: bold;
+}
+
+button {
+  background-color: #ff6347;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+button:hover {
+  background-color: #d84b3e;
+}
+
+//App.js
+
+import React, { useState } from 'react';
+import Header from './components/Header';
+import MenuList from './components/MenuList';
+import Cart from './components/Cart';
+import './App.css'; // Importing styles
+
+const App = () => {
+  const [cart, setCart] = useState([]);
+
+  const menuItems = [
+    { id: 1, name: 'Pizza', description: 'Cheesy delicious pizza', price: 10 },
+    { id: 2, name: 'Burger', description: 'Juicy beef burger', price: 8 },
+    { id: 3, name: 'Sushi', description: 'Fresh sushi rolls', price: 12 },
+  ];
+
+  const addToCart = (item) => {
+    setCart([...cart, item]);
+  };
+
+  const removeFromCart = (item) => {
+    const index = cart.findIndex(cartItem => cartItem.id === item.id);
+    if (index !== -1) {
+      setCart([
+        ...cart.slice(0, index),
+        ...cart.slice(index + 1)
+      ]);
+    }
+  };
+
+  return (
+    <div className="App">
+      <Header />
+      <MenuList items={menuItems} addToCart={addToCart} />
+      <Cart cartItems={cart} removeFromCart={removeFromCart} />
+    </div>
+  );
+};
+
+export default App;
+
+//App.jsx
+
+import React, { useState } from 'react';
+import Header from './components/Header';
+import MenuList from './components/MenuList';
+import Cart from './components/Cart';
+import './App.css'; // Import the app-specific CSS
+
+const App = () => {
+  const [cart, setCart] = useState([]);
+
+  const menuItems = [
+    { id: 1, name: 'Pizza', description: 'Cheesy delicious pizza', price: 10 },
+    { id: 2, name: 'Burger', description: 'Juicy beef burger', price: 8 },
+    { id: 3, name: 'Sushi', description: 'Fresh sushi rolls', price: 12 },
+  ];
+
+  const addToCart = (item) => {
+    setCart([...cart, item]);
+  };
+
+  const removeFromCart = (item) => {
+    const index = cart.findIndex(cartItem => cartItem.id === item.id);
+    if (index !== -1) {
+      setCart([
+        ...cart.slice(0, index),
+        ...cart.slice(index + 1)
+      ]);
+    }
+  };
+
+  return (
+    <div className="App">
+      <Header />
+      <MenuList items={menuItems} addToCart={addToCart} />
+      <Cart cartItems={cart} removeFromCart={removeFromCart} />
+    </div>
+  );
+};
+
+export default App;
+
+//index.css
+
+/* Global Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f9f9f9;
+}
+
+h1, h2, h3 {
+  font-weight: 600;
+}
+
+//index.js
+
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+
+ReactDOM.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>,
+  document.getElementById('root')
+);

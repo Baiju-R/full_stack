@@ -1,0 +1,290 @@
+//project application
+
+//Structure
+
+Project management/
+├── backend/
+│   ├── controllers/
+│   │   ├── taskController.js
+│   ├── models/
+│   │   ├── Task.js
+│   ├── routes/
+│   │   ├── taskRoutes.js
+|   └── index.js
+|   └── package.json
+├── frontend/
+│   ├── public
+│   │   ├── src
+│   │   │   ├── components/
+│   │   │   |    ├── TaskDashboard.js
+│   │   │   ├── services/
+│   │   │   |    ├── taskService.js
+│   │   |   ├── App.css
+│   │   │   ├── App.js
+│   │   │   ├── index.css
+│   │   │   ├── index.js
+|   └── package.json
+
+//taskController.js
+
+const Task = require('../models/Task');
+
+exports.getTasks = async (req, res) => {
+    try {
+        const tasks = await Task.find();
+        res.status(200).json(tasks);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.createTask = async (req, res) => {
+    const { title, description } = req.body;
+    try {
+        const newTask = new Task({ title, description });
+        await newTask.save();
+        res.status(201).json(newTask);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+exports.updateTaskStatus = async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const task = await Task.findByIdAndUpdate(id, { status }, { new: true });
+        res.status(200).json(task);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+
+//Task.js
+
+const mongoose = require('mongoose');
+
+const TaskSchema = new mongoose.Schema({
+    title: { type: String, required: true },
+    description: { type: String },
+    status: { 
+        type: String, 
+        enum: ['Pending', 'InProgress', 'Completed'], 
+        default: 'Pending' 
+    }
+}, { timestamps: true });
+
+module.exports = mongoose.model('Task', TaskSchema);
+
+//index.js
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const taskRoutes = require('./routes/taskRoutes');
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+
+mongoose.connect('mongodb://localhost:27017/project_management', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('Connected to MongoDB');
+}).catch(err => console.log(err));
+
+app.use('/api', taskRoutes);
+
+app.listen(5000, () => {
+    console.log('Server is running on port 5000');
+});
+
+//TaskDashboard.js
+
+import React, { useEffect, useState } from 'react';
+import { getTasks, createTask, updateTaskStatus } from '../services/taskService';
+
+const TaskDashboard = () => {
+    const [tasks, setTasks] = useState([]);
+    const [newTask, setNewTask] = useState({ title: '', description: '' });
+
+    useEffect(() => {
+        fetchTasks();
+    }, []);
+
+    const fetchTasks = async () => {
+        const { data } = await getTasks();
+        setTasks(data);
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setNewTask({ ...newTask, [name]: value });
+    };
+
+    const handleCreateTask = async () => {
+        await createTask(newTask);
+        fetchTasks();
+        setNewTask({ title: '', description: '' });
+    };
+
+    const handleStatusChange = async (id, status) => {
+        await updateTaskStatus(id, status);
+        fetchTasks();
+    };
+
+    return (
+        <div>
+            <h1>Project Management Dashboard</h1>
+
+            <div>
+                <input
+                    type="text"
+                    name="title"
+                    placeholder="Task Title"
+                    value={newTask.title}
+                    onChange={handleInputChange}
+                />
+                <input
+                    type="text"
+                    name="description"
+                    placeholder="Task Description"
+                    value={newTask.description}
+                    onChange={handleInputChange}
+                />
+                <button onClick={handleCreateTask}>Add Task</button>
+            </div>
+
+            <div>
+                {tasks.map((task) => (
+                    <div key={task._id}>
+                        <h3>{task.title}</h3>
+                        <p>{task.description}</p>
+                        <select
+                            value={task.status}
+                            onChange={(e) => handleStatusChange(task._id, e.target.value)}
+                        >
+                            <option value="Pending">Pending</option>
+                            <option value="InProgress">InProgress</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
+export default TaskDashboard;
+
+//taskService.js
+
+import axios from 'axios';
+
+const API_URL = 'http://localhost:5000/api/tasks';
+
+export const getTasks = async () => {
+    return await axios.get(API_URL);
+};
+
+export const createTask = async (task) => {
+    return await axios.post(API_URL, task);
+};
+
+export const updateTaskStatus = async (id, status) => {
+    return await axios.put(`${API_URL}/${id}`, { status });
+};
+
+//App.css
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+//App.js
+
+import React from 'react';
+import TaskDashboard from './components/TaskDashboard';  // Correctly import TaskDashboard
+
+function App() {
+  return (
+    <div className="App">
+      <TaskDashboard /> 
+    </div>
+  );
+}
+
+export default App;
+
+//index.css
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+//index.js
+
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
